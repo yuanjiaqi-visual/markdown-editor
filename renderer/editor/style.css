@@ -1,0 +1,211 @@
+/* Milkdown editor — Warm Paper theme */
+
+.milkdown-theme-nord {
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 48px 24px 96px;
+  font-family: 'Microsoft YaHei', 'PingFang SC', -apple-system, sans-serif;
+  font-size: 16px;
+  line-height: 1.8;
+  color: #2D2C2A;
+  outline: none;
+  min-height: 100%;
+}
+
+/* Placeholder */
+.milkdown-theme-nord .ProseMirror p.is-editor-empty:first-child::before {
+  content: attr(data-placeholder);
+  color: #B0ACA5;
+  pointer-events: none;
+  float: left;
+  height: 0;
+}
+
+/* Headings */
+.milkdown-theme-nord h1 { font-size: 28px; font-weight: 700; color: #1E1D1B; line-height: 1.4; margin: 24px 0 16px; }
+.milkdown-theme-nord h2 { font-size: 24px; font-weight: 700; color: #1E1D1B; line-height: 1.4; margin: 20px 0 12px; }
+.milkdown-theme-nord h3 { font-size: 20px; font-weight: 700; color: #2D2C2A; line-height: 1.4; margin: 16px 0 8px; }
+.milkdown-theme-nord h4 { font-size: 17px; font-weight: 600; color: #2D2C2A; margin: 12px 0 6px; }
+
+/* Inline code */
+.milkdown-theme-nord code {
+  background: #EFEBE4;
+  border-radius: 3px;
+  padding: 2px 6px;
+  font-family: 'Consolas', 'Fira Code', monospace;
+  font-size: 14px;
+  color: #2D2C2A;
+}
+
+/* Code blocks */
+.milkdown-theme-nord pre {
+  background: #EFEBE4;
+  border-radius: 6px;
+  padding: 16px;
+  font-family: 'Consolas', 'Fira Code', monospace;
+  font-size: 14px;
+  line-height: 1.6;
+  overflow-x: auto;
+  margin: 12px 0;
+}
+
+/* Blockquote */
+.milkdown-theme-nord blockquote {
+  border-left: 3px solid #7B9CB5;
+  background: rgba(123, 156, 181, 0.06);
+  padding: 8px 16px;
+  color: #5C5953;
+  margin: 16px 0;
+  border-radius: 0 4px 4px 0;
+}
+
+/* Table */
+.milkdown-theme-nord table { border-collapse: collapse; width: 100%; margin: 16px 0; }
+.milkdown-theme-nord th, .milkdown-theme-nord td {
+  border: 1px solid #E8E4DC;
+  padding: 8px 12px;
+  text-align: left;
+}
+.milkdown-theme-nord th { background: #F0ECE5; font-weight: 600; }
+.milkdown-theme-nord tr:nth-child(even) td { background: #FBF9F6; }
+
+/* Links */
+.milkdown-theme-nord a { color: #7B9CB5; text-decoration: none; }
+.milkdown-theme-nord a:hover { text-decoration: underline; }
+
+/* Dividers */
+.milkdown-theme-nord hr { border: none; border-top: 1px solid #E8E4DC; margin: 24px 0; }
+
+/* Selection */
+.milkdown-theme-nord ::selection { background: #D8D1C4; }
+
+/* Task list */
+.milkdown-theme-nord li[data-checked="true"] { text-decoration: line-through; color: #8A8780; }
+
+/* ---- Prism syntax highlighting ---- */
+.milkdown-theme-nord .token.comment,
+.milkdown-theme-nord .token.prolog,
+.milkdown-theme-nord .token.doctype,
+.milkdown-theme-nord .token.cdata { color: #9C988E; font-style: italic; }
+.milkdown-theme-nord .token.namespace { opacity: 0.7; }
+.milkdown-theme-nord .token.string,
+.milkdown-theme-nord .token.attr-value { color: #6B8C5C; }
+.milkdown-theme-nord .token.punctuation,
+.milkdown-theme-nord .token.operator { color: #7A7670; }
+.milkdown-theme-nord .token.entity,
+.milkdown-theme-nord .token.url,
+.milkdown-theme-nord .token.symbol,
+.milkdown-theme-nord .token.number,
+.milkdown-theme-nord .token.boolean,
+.milkdown-theme-nord .token.variable,
+.milkdown-theme-nord .token.constant,
+.milkdown-theme-nord .token.property,
+.milkdown-theme-nord .token.regex,
+.milkdown-theme-nord .token.inserted { color: #B0905C; }
+.milkdown-theme-nord .token.atrule,
+.milkdown-theme-nord .token.keyword,
+.milkdown-theme-nord .token.attr-name { color: #6B7DB5; }
+.milkdown-theme-nord .token.function,
+.milkdown-theme-nord .token.deleted,
+.milkdown-theme-nord .token.selector { color: #B56B7D; }
+.milkdown-theme-nord .token.tag,
+.milkdown-theme-nord .token.important { color: #7B9CB5; }
+.milkdown-theme-nord .token.bold { font-weight: 700; }
+.milkdown-theme-nord .token.italic { font-style: italic; }
+
+/* KaTeX */
+.milkdown-theme-nord .katex { font-size: 1.1em; }
+.milkdown-theme-nord .katex-display { margin: 16px 0; overflow-x: auto; overflow-y: hidden; }
+
+/* Math edit popup */
+.math-popup {
+  background: #FFFFFF;
+  border: 1px solid #E8E4DC;
+  border-radius: 8px;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.12);
+  padding: 12px;
+  min-width: 280px;
+  max-width: 480px;
+  font-family: 'Microsoft YaHei', 'PingFang SC', sans-serif;
+}
+.math-popup-input {
+  width: 100%;
+  border: 1px solid #E8E4DC;
+  border-radius: 4px;
+  padding: 8px;
+  font-family: 'Consolas', 'Fira Code', monospace;
+  font-size: 14px;
+  resize: vertical;
+  outline: none;
+  box-sizing: border-box;
+}
+.math-popup-input:focus {
+  border-color: #7B9CB5;
+}
+.math-popup-preview {
+  margin-top: 8px;
+  padding: 8px;
+  min-height: 24px;
+  background: #F8F6F1;
+  border-radius: 4px;
+  text-align: center;
+  overflow-x: auto;
+}
+.math-popup-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  margin-top: 8px;
+}
+.math-popup-actions button {
+  padding: 6px 16px;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 13px;
+  font-family: inherit;
+}
+.math-popup-ok {
+  background: #7B9CB5;
+  color: #FFFFFF;
+}
+.math-popup-ok:hover {
+  background: #6A8EA8;
+}
+.math-popup-cancel {
+  background: #E8E4DC;
+  color: #2D2C2A;
+}
+.math-popup-cancel:hover {
+  background: #D8D1C4;
+}
+
+/* Image styles */
+.milkdown-theme-nord img {
+  max-width: 100%;
+  cursor: pointer;
+  border-radius: 4px;
+}
+.milkdown-theme-nord img:hover {
+  outline: 2px solid #7B9CB5;
+  outline-offset: 2px;
+}
+
+/* Image edit popup labels */
+.math-popup label {
+  display: block;
+  margin-bottom: 6px;
+  font-size: 12px;
+  color: #8A8780;
+}
+.math-popup label input {
+  margin-top: 2px;
+  padding: 4px 8px;
+  border: 1px solid #E8E4DC;
+  border-radius: 4px;
+  font-size: 13px;
+  outline: none;
+}
+.math-popup label input:focus {
+  border-color: #7B9CB5;
+}

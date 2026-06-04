@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Markdown 编辑器 - 未命名</title>
+  <style>
+    :root {
+      --bg: #F8F6F1;
+      --surface: #FEFDFB;
+      --border: #E8E4DC;
+      --text: #2D2C2A;
+      --text-secondary: #8A8780;
+      --text-muted: #B0ACA5;
+      --accent: #7B9CB5;
+      --accent-hover: #6A8EA8;
+      --hover-bg: #F0ECE5;
+      --active-bg: #E8E3DB;
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      font-family: 'Microsoft YaHei', 'PingFang SC', -apple-system, sans-serif;
+      font-size: 14px;
+      color: var(--text);
+      background: var(--bg);
+      display: flex;
+      flex-direction: column;
+      height: 100vh;
+      overflow: hidden;
+    }
+
+    /* ---- Title Bar ---- */
+    #title-bar {
+      height: 36px;
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 12px;
+      flex-shrink: 0;
+      -webkit-app-region: drag;
+    }
+    #title-bar .title-left {
+      display: flex;
+      align-items: center;
+    }
+    #title-bar .app-name {
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--text-secondary);
+    }
+    #title-bar .file-name {
+      font-size: 13px;
+      color: var(--text);
+      margin-left: 12px;
+      -webkit-app-region: no-drag;
+    }
+    #title-bar .file-name::before {
+      content: '\2014';
+      color: var(--text-muted);
+      margin-right: 8px;
+    }
+    #title-bar .title-right {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      -webkit-app-region: no-drag;
+    }
+    #btn-outline-toggle {
+      height: 26px;
+      padding: 0 10px;
+      border: none;
+      border-radius: 4px;
+      background: transparent;
+      color: var(--text-muted);
+      font-size: 12px;
+      font-family: inherit;
+      cursor: pointer;
+    }
+    #btn-outline-toggle:hover {
+      background: var(--hover-bg);
+      color: var(--text);
+    }
+
+    /* ---- Main Layout ---- */
+    #main {
+      flex: 1;
+      display: flex;
+      overflow: hidden;
+    }
+    #editor-wrap {
+      flex: 1;
+      overflow-y: auto;
+      background: var(--bg);
+    }
+
+    /* ---- Outline Sidebar ---- */
+    #outline-sidebar {
+      width: 240px;
+      background: var(--surface);
+      border-left: 1px solid var(--border);
+      display: flex;
+      flex-direction: column;
+      flex-shrink: 0;
+      transition: width 0.2s;
+    }
+    #outline-sidebar.hidden {
+      width: 0;
+      overflow: hidden;
+      border-left: none;
+    }
+    #outline-sidebar .sidebar-header {
+      height: 36px;
+      padding: 0 12px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-bottom: 1px solid var(--border);
+      flex-shrink: 0;
+    }
+    #outline-sidebar .sidebar-title {
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--text-secondary);
+    }
+    #outline-sidebar .sidebar-close {
+      width: 24px;
+      height: 24px;
+      border: none;
+      border-radius: 4px;
+      background: transparent;
+      color: var(--text-muted);
+      font-size: 14px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    #outline-sidebar .sidebar-close:hover {
+      background: var(--hover-bg);
+    }
+    #outline-list {
+      flex: 1;
+      overflow-y: auto;
+      padding: 4px 0;
+    }
+    #outline-list .outline-item {
+      padding: 5px 12px;
+      cursor: pointer;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      border-left: 2px solid transparent;
+      font-size: 13px;
+      color: var(--text-secondary);
+      transition: background 0.1s, color 0.1s;
+    }
+    #outline-list .outline-item:hover {
+      background: var(--hover-bg);
+      color: var(--text);
+    }
+    #outline-list .outline-item.active {
+      color: var(--accent);
+      border-left-color: var(--accent);
+      background: rgba(123, 156, 181, 0.08);
+    }
+    #outline-list .outline-empty {
+      padding: 16px;
+      color: var(--text-muted);
+      text-align: center;
+      font-size: 13px;
+    }
+    #outline-list::-webkit-scrollbar {
+      width: 4px;
+    }
+    #outline-list::-webkit-scrollbar-thumb {
+      background: var(--border);
+      border-radius: 2px;
+    }
+
+    /* ---- Status Bar ---- */
+    #status-bar {
+      height: 26px;
+      background: var(--surface);
+      border-top: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      padding: 0 12px;
+      font-size: 12px;
+      color: var(--text-muted);
+      flex-shrink: 0;
+      justify-content: space-between;
+    }
+    #status-bar span {
+      white-space: nowrap;
+    }
+  </style>
+</head>
+<body>
+  <div id="title-bar">
+    <div class="title-left">
+      <span class="app-name">Markdown 编辑器</span>
+      <span class="file-name" id="title-filename">未命名</span>
+    </div>
+    <div class="title-right">
+      <button id="btn-outline-toggle">大纲</button>
+    </div>
+  </div>
+
+  <div id="main">
+    <div id="editor-wrap">
+      <div id="editor"></div>
+    </div>
+    <div id="outline-sidebar">
+      <div class="sidebar-header">
+        <span class="sidebar-title">大纲</span>
+        <button class="sidebar-close" id="btn-outline-close">x</button>
+      </div>
+      <div id="outline-list"></div>
+    </div>
+  </div>
+
+  <div id="status-bar">
+    <span id="status-file">Untitled</span>
+    <span id="status-saved">Saved</span>
+    <span id="status-words">0 words</span>
+  </div>
+
+  <script type="module" src="./index.ts"></script>
+</body>
+</html>
