@@ -1,4 +1,4 @@
-![image](file:///D:/14158/Documents/program/html/markdown/assets/522554e4-1b47-4bc8-bc7f-27ed05f4eb08.png)
+![image](/logo.png)
 
 # Markdown Editor
 
