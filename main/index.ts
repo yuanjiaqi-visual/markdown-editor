@@ -1,10 +1,11 @@
-import { app, BrowserWindow, Menu } from 'electron';
+import { app, BrowserWindow, Menu, dialog, ipcMain } from 'electron';
 import path from 'path';
 import fs from 'fs';
 import { registerFileHandlers } from './file';
 
 const isDev = process.env.NODE_ENV === 'development';
 let mainWindow: BrowserWindow | null = null;
+let allowClose = false;
 
 function getFileFromArgs(): string | null {
   const args = process.argv.slice(isDev ? 2 : 1);
@@ -107,6 +108,13 @@ function createWindow(): void {
   createMenu(win);
   mainWindow = win;
 
+  // Intercept close: ask renderer whether there are unsaved changes
+  win.on('close', (e) => {
+    if (allowClose) return;
+    e.preventDefault();
+    win.webContents.send('app:request-close');
+  });
+
   if (isDev) {
     win.loadURL('http://localhost:5173');
   } else {
@@ -134,6 +142,27 @@ if (!gotSingleLock) {
 
   app.whenReady().then(() => {
     registerFileHandlers();
+
+    ipcMain.handle('app:confirm-close', async (event) => {
+      const win = BrowserWindow.fromWebContents(event.sender);
+      if (!win) return 2; // cancel
+      const result = await dialog.showMessageBox(win, {
+        type: 'warning',
+        buttons: ['保存并退出', '不保存', '取消'],
+        defaultId: 0,
+        cancelId: 2,
+        noLink: true,
+        message: '有未保存的更改',
+        detail: '关闭窗口前是否保存对文档的更改？',
+      });
+      return result.response;
+    });
+
+    ipcMain.on('app:do-close', () => {
+      allowClose = true;
+      mainWindow?.close();
+    });
+
     createWindow();
 
     // If launched by opening a .md file

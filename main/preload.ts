@@ -51,6 +51,15 @@ contextBridge.exposeInMainWorld('app', {
   onMenuOpenFile: (callback: (data: OpenFileResult) => void) =>
     ipcRenderer.on('menu:open-file', (_event, data) => callback(data)),
 
+  onRequestClose: (callback: () => void) =>
+    ipcRenderer.on('app:request-close', callback),
+
+  confirmClose: (): Promise<number> =>
+    ipcRenderer.invoke('app:confirm-close'),
+
+  doClose: (): void =>
+    ipcRenderer.send('app:do-close'),
+
   openExternal: (url: string): Promise<void> =>
     ipcRenderer.invoke('shell:open-external', url),
 });

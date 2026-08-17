@@ -134,7 +134,13 @@ export function registerFileHandlers(): void {
 <head>
 <meta charset="UTF-8">
 <style>
+  ${css}
+  /* ---- 导出专用覆盖：白底、去掉编辑器淡灰背景与编辑器容器样式 ---- */
   body {
+    display: block;
+    height: auto;
+    overflow: visible;
+    background: #FFFFFF !important;
     font-family: 'Microsoft YaHei', 'PingFang SC', sans-serif;
     font-size: 16px;
     line-height: 1.8;
@@ -143,7 +149,13 @@ export function registerFileHandlers(): void {
     margin: 48px auto;
     padding: 0 24px;
   }
-  ${css}
+  .milkdown-theme-nord {
+    background: transparent !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    max-width: none !important;
+    min-height: 0 !important;
+  }
 </style>
 </head>
 <body>${html}</body>

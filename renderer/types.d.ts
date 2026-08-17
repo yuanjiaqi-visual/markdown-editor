@@ -22,6 +22,9 @@ interface AppAPI {
   onMenuUndo: (callback: () => void) => void;
   onMenuRedo: (callback: () => void) => void;
   onMenuOpenFile: (callback: (data: OpenFileResult) => void) => void;
+  onRequestClose: (callback: () => void) => void;
+  confirmClose: () => Promise<number>;
+  doClose: () => void;
   openExternal: (url: string) => Promise<void>;
 }
 

@@ -21,6 +21,7 @@ import type { EditorView } from '@milkdown/prose/view';
 import type { Node as ProseNode } from '@milkdown/prose/model';
 
 import 'katex/dist/katex.min.css';
+import '@milkdown/theme-nord/style.css';
 import './style.css';
 
 const historyPlugin = $prose(() => history());

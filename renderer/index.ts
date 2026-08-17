@@ -24,11 +24,47 @@ createEditor(root).then((ed) => {
   createOutline(ed);
   setupFileHandlers();
   setupStatusBar();
+  trackDirty(ed);
+  setupCloseHandler();
 
   // Outline toggle
   document.getElementById('btn-outline-toggle')?.addEventListener('click', toggleOutline);
   document.getElementById('btn-outline-close')?.addEventListener('click', toggleOutline);
 });
+
+/* ---- Dirty tracking ---- */
+function trackDirty(ed: Editor): void {
+  const view = ed.action((ctx) => ctx.get(editorViewCtx));
+  const origDispatch = view.dispatch.bind(view);
+  // Wrap dispatch so any content change (typing, paste, commands, undo/redo)
+  // marks the document as dirty.
+  view.dispatch = (tr) => {
+    origDispatch(tr);
+    markDirty();
+  };
+}
+
+/* ---- Close handler (unsaved changes reminder) ---- */
+function setupCloseHandler(): void {
+  window.app.onRequestClose(() => {
+    if (isSaved) {
+      window.app.doClose();
+      return;
+    }
+    void (async () => {
+      const response = await window.app.confirmClose();
+      if (response === 0) {
+        // Save and close
+        const ok = await saveFile();
+        if (ok) window.app.doClose();
+      } else if (response === 1) {
+        // Don't save
+        window.app.doClose();
+      }
+      // response === 2: cancel, keep window open
+    })();
+  });
+}
 
 /* ---- File handlers ---- */
 function setupFileHandlers(): void {
@@ -46,7 +82,6 @@ function setupFileHandlers(): void {
     loadMarkdown(editor, data.content);
     currentPath = data.path;
     setImageBaseDir(getDirName(data.path));
-    document.title = getFileName(data.path) + ' - Markdown 编辑器';
     markSaved();
   });
 
@@ -94,34 +129,36 @@ function setupStatusBar(): void {
   if (!editor) return;
   updateStatusBar();
   setInterval(() => {
-    const wc = countWords();
-    statusWords.textContent = `${wc} 字`;
-    if (isSaved && wc > 0) {
-      // Detect unsaved changes by tracking initial word count
-    }
+    statusWords.textContent = `${countWords()} 字`;
   }, 500);
 }
 
 function updateStatusBar(): void {
   updateTitleDisplay();
-  statusSaved.textContent = '已保存';
+  statusSaved.textContent = isSaved ? '已保存' : '未保存';
   statusWords.textContent = `${countWords()} 字`;
 }
 
 function updateTitleDisplay(): void {
-  if (currentPath) {
-    const name = getFileName(currentPath);
-    titleFilename.textContent = name;
-    statusFile.textContent = name;
-  } else {
-    titleFilename.textContent = '未命名';
-    statusFile.textContent = '未命名';
-  }
+  const name = currentPath ? getFileName(currentPath) : '未命名';
+  const dirtyMark = isSaved ? '' : ' ●';
+  titleFilename.textContent = name + dirtyMark;
+  statusFile.textContent = name;
+  document.title = `${name}${dirtyMark} - Markdown 编辑器`;
 }
 
 function markSaved(): void {
   isSaved = true;
   statusSaved.textContent = '已保存';
+  statusSaved.classList.remove('dirty');
+  updateTitleDisplay();
+}
+
+function markDirty(): void {
+  if (!isSaved) return;
+  isSaved = false;
+  statusSaved.textContent = '未保存';
+  statusSaved.classList.add('dirty');
   updateTitleDisplay();
 }
 
@@ -279,31 +316,29 @@ async function openFile(): Promise<void> {
   loadMarkdown(editor, result.content);
   currentPath = result.path;
   setImageBaseDir(getDirName(result.path));
-  document.title = getFileName(result.path) + ' - Markdown 编辑器';
   markSaved();
 }
 
-async function saveFile(): Promise<void> {
-  if (!editor) return;
+async function saveFile(): Promise<boolean> {
+  if (!editor) return false;
   const content = getMarkdown(editor);
   if (currentPath) {
     await window.app.saveFile(currentPath, content);
-    document.title = getFileName(currentPath) + ' - Markdown 编辑器';
     markSaved();
-  } else {
-    await saveFileAs();
+    return true;
   }
+  return saveFileAs();
 }
 
-async function saveFileAs(): Promise<void> {
-  if (!editor) return;
+async function saveFileAs(): Promise<boolean> {
+  if (!editor) return false;
   const content = getMarkdown(editor);
   const result = await window.app.saveFileAs(content);
-  if (!result) return;
+  if (!result) return false;
   currentPath = result.path;
   setImageBaseDir(getDirName(result.path));
-  document.title = getFileName(result.path) + ' - Markdown 编辑器';
   markSaved();
+  return true;
 }
 
 function newFile(): void {
@@ -311,18 +346,40 @@ function newFile(): void {
   loadMarkdown(editor, '');
   currentPath = null;
   setImageBaseDir(null);
-  document.title = '未命名 - Markdown 编辑器';
-  titleFilename.textContent = '未命名';
   markSaved();
 }
 
 async function exportPdf(): Promise<void> {
   if (!editor) return;
   const view = editor.action((ctx) => ctx.get(editorViewCtx));
-  const html = view.dom.innerHTML;
+  // 包一层 .milkdown-theme-nord，使主题/编辑器样式选择器对导出内容生效
+  const html = '<div class="milkdown-theme-nord">' + view.dom.innerHTML + '</div>';
   let css = '';
-  const styles = document.querySelectorAll('style');
-  styles.forEach((s) => { if (s.textContent) css += s.textContent + '\n'; });
+
+  // 1) 内联 <style> 标签
+  document.querySelectorAll('style').forEach((s) => {
+    if (s.textContent) css += s.textContent + '\n';
+  });
+
+  // 2) 外部 <link rel="stylesheet">（vite 打包的编辑器/主题/katex/prism 样式）
+  const links = [...document.querySelectorAll('link[rel="stylesheet"]')];
+  for (const link of links) {
+    try {
+      const res = await fetch(link.href);
+      if (res.ok) {
+        css += (await res.text()) + '\n';
+        continue;
+      }
+    } catch { /* fall through */ }
+    // 兜底：从 CSSStyleSheet 读取规则
+    try {
+      const sheet = link.sheet;
+      if (sheet) {
+        for (const rule of sheet.cssRules) css += rule.cssText + '\n';
+      }
+    } catch { /* ignore */ }
+  }
+
   await window.app.exportPdf(html, css);
 }
 
