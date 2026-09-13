@@ -3,6 +3,12 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <!-- Blocks inline/remote scripts. file: is required because the packaged app is
+       served from file://; md-asset: is the allow-listed local image scheme. -->
+  <meta
+    http-equiv="Content-Security-Policy"
+    content="default-src 'self' file:; script-src 'self' file:; style-src 'self' 'unsafe-inline' file:; img-src 'self' data: blob: file: md-asset: https: http:; font-src 'self' data: file:; connect-src 'self' file: ws:; object-src 'none'; base-uri 'none'; form-action 'none'"
+  />
   <title>Markdown 编辑器 - 未命名</title>
   <style>
     :root {
@@ -95,6 +101,70 @@
       flex: 1;
       overflow-y: auto;
       background: var(--bg);
+    }
+    #editor-wrap.hidden {
+      display: none;
+    }
+
+    /* ---- Source Code View ---- */
+    #source-view {
+      flex: 1;
+      min-width: 0;
+      display: flex;
+      background: var(--bg);
+    }
+    #source-view.hidden {
+      display: none;
+    }
+    #source-pane {
+      flex: 1;
+      min-width: 0;
+      max-width: 800px;
+      margin: 0 auto;
+      display: flex;
+    }
+    /* Line numbers. Soft wrapping is off in source view, so one logical line is
+       exactly one row and the gutter stays aligned by vertical scroll alone. */
+    #source-gutter {
+      flex: 0 0 auto;
+      overflow: hidden;
+      padding: 48px 10px 96px 0;
+      border-right: 1px solid var(--border);
+      color: var(--text-muted);
+      font-family: 'Consolas', 'Fira Code', 'Courier New', monospace;
+      font-size: 14px;
+      line-height: 1.7;
+      text-align: right;
+      user-select: none;
+      -webkit-user-select: none;
+    }
+    #source-gutter pre {
+      margin: 0;
+      font: inherit;
+      line-height: inherit;
+      color: inherit;
+      will-change: transform;
+    }
+    #source-editor {
+      flex: 1;
+      min-width: 0;
+      padding: 48px 24px 96px 12px;
+      border: none;
+      outline: none;
+      resize: none;
+      background: transparent;
+      color: var(--text);
+      font-family: 'Consolas', 'Fira Code', 'Courier New', monospace;
+      font-size: 14px;
+      line-height: 1.7;
+      tab-size: 2;
+      white-space: pre;
+      overflow-wrap: normal;
+      overflow-x: auto;
+      overflow-y: auto;
+    }
+    #source-editor::selection {
+      background: #D8D1C4;
     }
 
     /* ---- Outline Sidebar ---- */
@@ -202,6 +272,8 @@
       font-weight: 600;
     }
   </style>
+  <script type="module" crossorigin src="./assets/index-DReLFfsT.js"></script>
+  <link rel="stylesheet" crossorigin href="./assets/index-BVebxZOw.css">
 </head>
 <body>
   <div id="title-bar">
@@ -218,6 +290,12 @@
     <div id="editor-wrap">
       <div id="editor"></div>
     </div>
+    <div id="source-view" class="hidden">
+      <div id="source-pane">
+        <div id="source-gutter" aria-hidden="true"><pre id="source-gutter-inner"></pre></div>
+        <textarea id="source-editor" spellcheck="false" autocomplete="off" autocapitalize="off" wrap="off" aria-label="Markdown 源代码"></textarea>
+      </div>
+    </div>
     <div id="outline-sidebar">
       <div class="sidebar-header">
         <span class="sidebar-title">大纲</span>
@@ -233,6 +311,5 @@
     <span id="status-words">0 words</span>
   </div>
 
-  <script type="module" src="./index.ts"></script>
 </body>
 </html>
